@@ -36,7 +36,40 @@ namespace DBConnExample.Controllers
         public List<Customer> GetCustomer(string searchString) {
             List<Customer> customers = new List<Customer>();
 
-            // code goes here       
+            // code goes here
+
+            // parameterising to avoid injection
+            
+
+            SqlConnection conn = new SqlConnection(this.connectionString);
+
+            //1. declaring command object with parameter
+            string queryString = "Select * From Customer WHERE LastName = @LName";
+
+            SqlCommand command = new SqlCommand(queryString, conn);
+
+            //2. defining parameters used in the command object
+            SqlParameter param = new SqlParameter();
+            param.ParameterName = "@LName";
+            param.Value = searchString;
+
+            //3. adding new parameters to command object
+            command.Parameters.Add(param);
+            
+            conn.Open();
+        
+            string result = "";
+            using(SqlDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    result += reader[0].ToString() + reader[1].ToString() + reader[2].ToString() + "\n";
+                    
+                    // ORM - Object Relation Mapping
+                    customers.Add(
+                        new Customer() { Id = (int)reader[0], FirstName = reader[1].ToString(), Surname = reader[2].ToString()});                
+                }
+            }
 
             return customers;
         }
